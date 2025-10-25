@@ -1,15 +1,46 @@
 from SRC.Domain.GenericConstants import Fitness_Constants as FC, Realistic_Validations as RV
 from SRC.Infrastructure.Validations import Check_String
 
-class CPFC_Inforamation:
-    def __init__(self, Gender:str = "M", Age:int = 20, Height:float = 180, Weight:float = 80, Weekly_Activity:int = 0, Goal:str = "G") -> None:
-        calculator = Fitness_Calculate(Gender, Age, Height, Weight, Weekly_Activity, Goal)
-        self.BMR: float = calculator.BMR
-        self.TDEE: float = calculator.TDEE
-        self.PFC: dict[str,int] = calculator.PFC
-        
+class Fitness_Inforamation:
+    BMI_Info: dict[str, float|str]
+    BMR: float
+    TDEE: float
+    PFC: dict[str,int]
 
-class Fitness_Calculate():
+    def __init__(self, Gender:str = "M", Age:int = 20, Height:float = 180, Weight:float = 80, Weekly_Activity:int = 0, Goal:str = "G") -> None:
+        CPFC_Info = CPFC_Calculate(Gender, Age, Height, Weight, Weekly_Activity, Goal)
+        BMI_Info_Class = BMI_Information(Height, Weight)
+
+        self.BMI_Info = BMI_Info_Class.bmi_info
+
+        self.BMR = CPFC_Info.BMR
+        self.TDEE = CPFC_Info.TDEE
+        self.PFC = CPFC_Info.PFC
+        
+class BMI_Information():
+    Height: float
+    Weight: float
+
+    BMI: float
+    Category: str
+
+    def __init__(self, Height: float, Weight: float) -> None:
+        self._Height = Height
+        self._Weight = Weight
+
+        self.bmi_info = self._BMI_Calculate()
+
+    def _BMI_Calculate(self) -> dict[str, float|str]:
+        BMI:float = self._Weight/(self._Height/100)**2
+
+        BMI_Info:dict[str, float|str] = {
+            "BMI" : round(BMI, 1),
+            "Category": FC.Get_BMICategory(BMI),
+            "Recommended BMI" : f"{FC.Recommended_BMI['Min']} - {FC.Recommended_BMI['Max']}"
+        }
+        return BMI_Info
+
+class CPFC_Calculate():
     Gender: str
     Age: int
     Height: float
@@ -20,7 +51,6 @@ class Fitness_Calculate():
     TDEE: float
     PFC: dict[str,int]
 
-
     def __init__(self, Gender:str, Age:int, Height:float, Weight:float, Weekly_Activity:int, Goal:str) -> None:
         self.Gender = Gender
         self.Age = Age
@@ -29,8 +59,8 @@ class Fitness_Calculate():
         self.Weekly_Activity = Weekly_Activity
         self.Goal = Goal
         self.BMR = round(self._BMR_Calculate())
-        self.TDEE= round(self._TDEE_Calculate())
-        self.PFC= self._PFC_Calculate()
+        self.TDEE = round(self._TDEE_Calculate())
+        self.PFC = self._PFC_Calculate()
     
     def _BMR_Calculate(self) -> float:
         BMR:float = 10 * self.Weight + 6.25 * self.Height - 5 * self.Age
