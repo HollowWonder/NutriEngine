@@ -26,6 +26,11 @@ class Fitness_Constants:
         (40.0, float('inf')): "Obesity class III"
     }
 
+    Recommended_BMI:dict[str,float] = {
+        "Min" : 18.5,
+        "Max" : 25
+    }
+
     @classmethod
     def Get_BMICategory(cls, BMI_value:float) -> str:
         for (min_Index, max_Index), Category in cls.BMI_Categories.items():
