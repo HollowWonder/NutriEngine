@@ -30,10 +30,11 @@ class Fitness_Constants:
         for (min_Index,max_Index) ,Category in BMI_Categories.items():
             if index >= min_Index and index < max_Index:
                 return Category
+        return "Unknown category"
 
     # For BMR calculator
     Metabolism: dict[str, int] = {
-        "M": 5, "W": -161, "M": 0
+        "M": 5, "W": -161
     }
 
     # For TDEE calculator
