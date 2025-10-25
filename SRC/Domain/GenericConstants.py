@@ -14,6 +14,18 @@ class Realistic_Validations:
     Max_Activity:int = 9
 
 class Fitness_Constants:
+    
+    # For BMI calculator
+    BMI_Categories = {
+        (0, 16.0): "Severe underweight",
+        (16.0, 18.5): "Underweight", 
+        (18.5, 25.0): "Normal weight",
+        (25.0, 30.0): "Overweight",
+        (30.0, 35.0): "Obesity class I",
+        (35.0, 40.0): "Obesity class II", 
+        (40.0, float('inf')): "Obesity class III"
+    }
+
     # For BMR calculator
     Metabolism: dict[str, int] = {
         "M": 5, "W": -161, "M": 0
