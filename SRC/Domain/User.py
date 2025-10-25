@@ -1,4 +1,4 @@
-from SRC.Infrastructure.Validations import Check_String, Check_Int_Error
+from SRC.Infrastructure.Validations import check_numerical_inputvalue, check_str_inputvalue
 from SRC.Domain.GenericConstants import Realistic_Validations as RV
 from typing import Optional
 from dataclasses import dataclass
@@ -29,10 +29,10 @@ class UserInfo:
     
     def input_info(self) -> None:
         self.Name = input("What's your name: ")
-        self.Gender = Check_String("What's your gender: ", RV.List_Of_Genders)
-        self.Age = Check_Int_Error("How old are you: ", RV.Min_Age, RV.Max_Age)
-        self.Height = Check_Int_Error("How tall are you (cm): ", RV.Min_Height, RV.Max_Height)
-        self.Weight = Check_Int_Error("How much do you weigh (kg): ", RV.Min_Weight, RV.Max_Weight)
+        self.Gender = check_str_inputvalue("What's your gender: ", RV.List_Of_Genders)
+        self.Age = check_numerical_inputvalue("How old are you: ", RV.Min_Age, RV.Max_Age)
+        self.Height = check_numerical_inputvalue("How tall are you (cm): ", RV.Min_Height, RV.Max_Height)
+        self.Weight = check_numerical_inputvalue("How much do you weigh (kg): ", RV.Min_Weight, RV.Max_Weight)
 
 @dataclass
 class UserGoals:
@@ -55,10 +55,10 @@ class UserGoals:
             "L": {"Min":RV.Min_Weight, "Max":self.Current_Weight-1}
         }
         
-        self.Goal = Check_String("Maintenance weight - M\nLose weight - L\nGain weight - G\nChoice: ", RV.Valid_Goals)
-        self.Weekly_Activity = Check_Int_Error("Workouts per week (0 if none): ", RV.Min_Activity, RV.Max_Activity)
+        self.Goal = check_str_inputvalue("Maintenance weight - M\nLose weight - L\nGain weight - G\nChoice: ", RV.Valid_Goals)
+        self.Weekly_Activity = check_numerical_inputvalue("Workouts per week (0 if none): ", RV.Min_Activity, RV.Max_Activity)
 
         if self.Goal != "M":
-            self.Goal_Weight = Check_Int_Error("What weight do you want (kg): ", Weight_Ranges[self.Goal]["Min"], Weight_Ranges[self.Goal]["Max"])
+            self.Goal_Weight = check_numerical_inputvalue("What weight do you want (kg): ", Weight_Ranges[self.Goal]["Min"], Weight_Ranges[self.Goal]["Max"])
         else:
             self.Goal_Weight = self.Current_Weight

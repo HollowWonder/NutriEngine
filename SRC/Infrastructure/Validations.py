@@ -1,26 +1,37 @@
-def Check_Int_Error(message:str, min_Value:int|float, max_Value:int|float) -> int:
-    while True:
-        try:
-            Value:int = int(input(message))
-            if Value < min_Value:
-                print(f"Enter number >= {min_Value}")
-            elif Value >= max_Value:
-                print(f"Enter number < {max_Value}")
-            else:
-                return Value
-        except ValueError:
-            print("Enter number format int")
-def Check_String(message:str, Valid_Chars:list[str]) -> str:
-    while True:
-        String:str = input(message).upper()
-        if String in Valid_Chars:
-            return String
-        print(f"Enter one of {Valid_Chars}")
-
-def Check_Len_String(message:str, Len_string:int) -> str:
-    while True:
-        String:str = input(message)
-        if len(String) <= Len_string:
-            return String
+def check_numerical_value(value:int|float, min_value:int|float, max_value:int|float) -> int|float:
+    try:
+        if max_value > value >= min_value:
+            return value
         else:
-            print("String is too large")
+            if value < min_value:
+                print(f"Value must be >= {min_value}")
+            else:
+                print(f"value must be < {max_value}")
+    except ValueError:
+        print("Invalid value, needed format: int or float")
+
+def check_numerical_inputvalue(message: str, min_value: int|float, max_value: int|float) -> int|float:
+    while True:
+        value:int  = int(input(message))
+        return check_int_value(value, min_value, max_value)
+
+def check_str_value(value: str, list_valid_value: list[str]) -> str|None:
+    try:
+        lower_version_list:list[str] = [word.lower() for word in list_valid_value]
+        if value.lower() in lower_version_list:
+            return value.lower()
+        else:
+            print(f"Invalid value, must be one of {list_valid_value}")
+    except ValueError:
+        print("Invalid value, needed format: str")
+
+def check_str_inputvalue(message:str, list_valid_value: list[str]):
+    while True:
+        value = input(message)
+        if check_str_value(value, list_valid_value) != None:
+            return value
+
+def check_str_lenvalue(value: str, min_len:int, max_len: int):
+    len_value = len(value)
+    if check_int_value(len_value, min_len, max_len) != None:
+        return value
