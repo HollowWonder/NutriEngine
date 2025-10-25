@@ -26,9 +26,10 @@ class Fitness_Constants:
         (40.0, float('inf')): "Obesity class III"
     }
 
-    def Get_BMICategory(index:int) -> str:
-        for (min_Index,max_Index) ,Category in BMI_Categories.items():
-            if index >= min_Index and index < max_Index:
+    @classmethod
+    def Get_BMICategory(cls, BMI_value:float) -> str:
+        for (min_Index, max_Index), Category in cls.BMI_Categories.items():
+            if BMI_value >= min_Index and BMI_value < max_Index:
                 return Category
         return "Unknown category"
 
