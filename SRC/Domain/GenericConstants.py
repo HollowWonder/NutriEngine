@@ -16,7 +16,7 @@ class Realistic_Validations:
 class Fitness_Constants:
     
     # For BMI calculator
-    BMI_Categories = {
+    BMI_Categories:dict[tuple[float,float], str] = {
         (0, 16.0): "Severe underweight",
         (16.0, 18.5): "Underweight", 
         (18.5, 25.0): "Normal weight",
@@ -25,6 +25,11 @@ class Fitness_Constants:
         (35.0, 40.0): "Obesity class II", 
         (40.0, float('inf')): "Obesity class III"
     }
+
+    def Get_BMICategory(index:int) -> str:
+        for (min_Index,max_Index) ,Category in BMI_Categories.items():
+            if index >= min_Index and index < max_Index:
+                return Category
 
     # For BMR calculator
     Metabolism: dict[str, int] = {
