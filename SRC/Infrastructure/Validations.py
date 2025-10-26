@@ -20,12 +20,9 @@ def check_numerical_inputvalue(message: str, min_value: int|float, max_value: in
 
 def check_str_value(value: str, list_valid_value: list[str]) -> str|None:
     try:
-        lower_version_list:list[str] = [word.lower() for word in list_valid_value]
-        if value.lower() in lower_version_list:
-            return value.lower()
-        else:
-            print(f"Invalid value, must be one of {list_valid_value}")
-            return None
+        for word in list_valid_value:
+            if value.lower() == word.lower():
+                return word 
     except ValueError:
         print("Invalid value, needed format: str")
         return None
