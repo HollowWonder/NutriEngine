@@ -16,8 +16,9 @@
     - `__init__.py` - Package initialization file
 - **Tests** - Related to tests
   - `__init__.py` - Package initialization file
-  - `AllTests.py` - Unified test runner
+  - `test_Domain_Classes.py` - Domain test runner
   - `TestDataGenerator.py` - Generator of test data
+  - `TestJsonHandler` - JSON operaions with test data
 - **Data** - Data storage
     - **TestData** - Test data files
       - `TestData.json` - Test user data
