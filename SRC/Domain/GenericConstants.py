@@ -67,6 +67,18 @@ class Fitness_Constants:
         "Min": 0.8, "Max": 1.2 
     }
 
-    Kcalories_Per_Gramm:dict[str,float] = {
+    Kcalories_Per_Gramm:dict[str, float|int] = {
         "Protein": 4, "Fats": 9, "Carbs": 4
+    }
+
+    Deficit_Mode: dict[str,dict[str,tuple[int,int]]] = {
+        "L" : {
+            "Normal" : (15, 20),
+            "Extra" : (25, 30)
+        },
+        "G" : {
+            "Low": (10, 15),
+            "Normal": (15, 20),
+            "Extra": (20, 25)
+        }
     }
