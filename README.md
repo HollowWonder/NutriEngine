@@ -8,6 +8,7 @@
     - `User.py` - User classes
     - `Calculators.py` - Calculator classes and methods
     - `GenericConstants.py` - Constant values and configurations
+    - `UserProfileCollector` - Collect user information and nutri results
   - **Infrastructure** - External dependencies and technical components
     - `__init__.py` - Package initialization file
     - `JsonHandler.py` -  JSON operations
