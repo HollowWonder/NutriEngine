@@ -1,29 +1,7 @@
 from SRC.Domain.GenericConstants import FitnessConstants as FC, RealisticValidations as RV
 from SRC.Infrastructure.Validations import check_str_value
 
-
-class FitnessInformation:
-    bmi_info: dict[str, float | str]
-    bmr: float
-    tdee: float
-    pfc: dict[str, float]
-    deficit_info: dict[str, dict[str, float | dict[str, float]]]
-
-    def __init__(self, gender: str = "M", age: int = 20, height: float = 180, 
-                 weight: float = 80, weekly_activity: int = 0, goal: str = "G", 
-                 mode: str = "normal") -> None:
-        cpfc_info = CPFCCalculator(gender, age, height, weight, weekly_activity, goal)
-        bmi_info_class = BMIInformation(height, weight)
-
-        self.bmi_info = bmi_info_class.bmi_info
-        self.bmr = cpfc_info.bmr
-        self.tdee = cpfc_info.tdee
-        self.pfc = cpfc_info.pfc
-
-        if goal != "M":
-            deficit_info = DeficitCalculator(self.tdee, weight, goal, mode)
-            self.deficit_info = deficit_info.deficit_cpfc
-        
+     
 class BMIInformation:
     def __init__(self, height: float, weight: float) -> None:
         self.bmi_info = self.bmi_calculate(weight, height)
