@@ -1,29 +1,30 @@
 from os import path
 
-class File_Paths:
+
+class FilePaths:
     def __init__(self) -> None:
-        self.Base_Dir:str = path.dirname(__file__)
-        self._Paths:dict[str,str] = {
-            "NutriEngine" : self.Base_Dir,
-            "TestData.json" : path.join(self.Base_Dir, "Data","TestData", "TestData.json")
+        self.base_dir: str = path.dirname(__file__)
+        self._paths: dict[str, str] = {
+            "NutriEngine": self.base_dir,
+            "TestData.json": path.join(self.base_dir, "Data", "TestData", "TestData.json")
         }
     
-    def get_path(self, File_Name) -> str:
-        return self._Paths.get(File_Name, "")
+    def get_path(self, file_name: str) -> str:
+        return self._paths.get(file_name, "")
 
-    def get_paths(self) -> dict[str,str]:
-        return self._Paths
+    def get_paths(self) -> dict[str, str]:
+        return self._paths
 
-class Checker_Paths(File_Paths):
-    def Check_Path(self, File_Name:str) -> bool:
-        return path.exists(self.get_path(File_Name))
 
-    def Check_Paths(self) -> dict[str,dict[str, bool|str]]:
-        Directory_Info:dict[str,dict[str, bool|str]] = {}
-        for File, File_Path in self._Paths.items():
-            Directory_Info[File] = {
-                "Path" : File_Path,
-                "Found" : path.exists(File_Path)
+class CheckerPaths(FilePaths):
+    def check_path(self, file_name: str) -> bool:
+        return path.exists(self.get_path(file_name))
+
+    def check_paths(self) -> dict[str, dict[str, bool | str]]:
+        directory_info: dict[str, dict[str, bool | str]] = {}
+        for file, file_path in self._paths.items():
+            directory_info[file] = {
+                "path": file_path,
+                "found": path.exists(file_path)
             }
-        return Directory_Info
-
+        return directory_info

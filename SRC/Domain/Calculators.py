@@ -1,106 +1,119 @@
-from SRC.Domain.GenericConstants import Fitness_Constants as FC, Realistic_Validations as RV
-from SRC.Infrastructure.Validations import check_str_value as csv
+from SRC.Domain.GenericConstants import FitnessConstants as FC, RealisticValidations as RV
+from SRC.Infrastructure.Validations import check_str_value
 
-class Fitness_Information:
-    BMI_Info: dict[str, float|str]
-    BMR: float
-    TDEE: float
-    PFC: dict[str,float]
-    deficit_info: dict[str, dict[str, float|dict[str, float]]]
 
-    def __init__(self, Gender:str = "M", Age:int = 20, Height:float = 180, Weight:float = 80, Weekly_Activity:int = 0, Goal:str = "G", mode: str = "Normal") -> None:
-        CPFC_Info = CPFC_Calculator(Gender, Age, Height, Weight, Weekly_Activity, Goal)
-        BMI_Info_Class = BMI_Information(Height, Weight)
+class FitnessInformation:
+    bmi_info: dict[str, float | str]
+    bmr: float
+    tdee: float
+    pfc: dict[str, float]
+    deficit_info: dict[str, dict[str, float | dict[str, float]]]
 
-        self.BMI_Info = BMI_Info_Class.bmi_info
+    def __init__(self, gender: str = "M", age: int = 20, height: float = 180, 
+                 weight: float = 80, weekly_activity: int = 0, goal: str = "G", 
+                 mode: str = "normal") -> None:
+        cpfc_info = CPFCCalculator(gender, age, height, weight, weekly_activity, goal)
+        bmi_info_class = BMIInformation(height, weight)
 
-        self.BMR = CPFC_Info.BMR
-        self.TDEE = CPFC_Info.TDEE
-        self.PFC = CPFC_Info.PFC
+        self.bmi_info = bmi_info_class.bmi_info
+        self.bmr = cpfc_info.bmr
+        self.tdee = cpfc_info.tdee
+        self.pfc = cpfc_info.pfc
 
-        if Goal != "M":
-            Deficit_Info = DeficitCalculator(self.TDEE, Weight, Goal, mode)
-            self.deficit_info = Deficit_Info.Deficit_CPFC
+        if goal != "M":
+            deficit_info = DeficitCalculator(self.tdee, weight, goal, mode)
+            self.deficit_info = deficit_info.deficit_cpfc
         
-class BMI_Information():
-    def __init__(self, Height: float, Weight: float) -> None:
-        self.bmi_info = self.BMI_Calculate(Weight, Height)
+class BMIInformation:
+    def __init__(self, height: float, weight: float) -> None:
+        self.bmi_info = self.bmi_calculate(weight, height)
 
     @staticmethod
-    def BMI_Calculate(weight:float, height:float) -> dict[str, float|str]:
-        BMI:float = weight/(height/100)**2
+    def bmi_calculate(weight: float, height: float) -> dict[str, float | str]:
+        bmi: float = weight / (height / 100) ** 2
 
-        BMI_Info:dict[str, float|str] = {
-            "BMI" : round(BMI, 1),
-            "Category": FC.Get_BMICategory(BMI),
-            "Recommended BMI" : f"{FC.Recommended_BMI['Min']} - {FC.Recommended_BMI['Max']}"
+        bmi_info: dict[str, float | str] = {
+            "bmi": round(bmi, 1),
+            "category": FC.get_bmi_category(bmi),
+            "recommended_bmi": f"{FC.RECOMMENDED_BMI['min']} - {FC.RECOMMENDED_BMI['max']}"
         }
-        return BMI_Info
+        return bmi_info
 
-class CPFC_Calculator():
-    BMR: float
-    TDEE: float
-    PFC: dict[str, float]
 
-    def __init__(self, Gender:str = "M", Age:int = 20, Height:float = 180, Weight:float = 80, Weekly_Activity:int = 3, Goal:str = "G") -> None:
-        self.BMR = self.BMR_Calculate(Weight, Height, Age, Gender)
-        self.TDEE = self.TDEE_Calculate(self.BMR, Weekly_Activity)
-        self.PFC = self.PFC_Calculate(Weight, self.TDEE, Goal)
+class CPFCCalculator:
+    bmr: float
+    tdee: float
+    pfc: dict[str, float]
+
+    def __init__(self, gender: str = "M", age: int = 20, height: float = 180, 
+                 weight: float = 80, weekly_activity: int = 3, goal: str = "G") -> None:
+        self.bmr = self.bmr_calculate(weight, height, age, gender)
+        self.tdee = self.tdee_calculate(self.bmr, weekly_activity)
+        self.pfc = self.pfc_calculate(weight, self.tdee, goal)
     
     @staticmethod
-    def BMR_Calculate(weight:float, height:float, age:float, gender:str) -> float:
-        BMR:float = 10 * weight + 6.25 * height - 5 * age
-        BMR += FC.Metabolism[gender]
-        return round(BMR)
+    def bmr_calculate(weight: float, height: float, age: float, gender: str) -> float:
+        bmr: float = 10 * weight + 6.25 * height - 5 * age
+        bmr += FC.METABOLISM[gender]
+        return round(bmr)
 
     @staticmethod
-    def TDEE_Calculate(BMR:float, weekly_activity:int) -> float:
-        return round(BMR*FC.Value_Weekly_Activity[weekly_activity])
+    def tdee_calculate(bmr: float, weekly_activity: int) -> float:
+        return round(bmr * FC.VALUE_WEEKLY_ACTIVITY[weekly_activity])
     
     @staticmethod
-    def PFC_Calculate(Weight:float, TDEE:float, Goal:str ) -> dict[str, float]:
+    def pfc_calculate(weight: float, tdee: float, goal: str) -> dict[str, float]:
+        goal_value: int = FC.VALUE_GOALS_FOR_CALCULATOR[goal.upper()]
+        kcal: float = tdee
 
-        Goal_Value:int = FC.Value_Goals_For_Calculator[Goal.upper()]
-        Kcal:float = TDEE
+        protein_min: float = round(weight * FC.PROTEIN_COEFFS[goal.upper()]["min"])
+        protein_max: float = round(weight * FC.PROTEIN_COEFFS[goal.upper()]["max"])
 
-        Protein_Min:float = round(Weight * FC.Protein_Coeffs[Goal.upper()]["Min"])
-        Protein_Max:float = round(Weight * FC.Protein_Coeffs[Goal.upper()]["Max"])
+        fats_min: float = round(weight * FC.FAT_COEFFS["min"])
+        fats_max: float = round(weight * FC.FAT_COEFFS["max"])
 
-        Fats_Min:float = round(Weight * FC.Fat_Coeffs["Min"])
-        Fats_Max:float = round(Weight * FC.Fat_Coeffs["Max"])
+        carbs_min: float = round(
+            (kcal - protein_max * FC.KCALORIES_PER_GRAM["protein"] - 
+             fats_max * FC.KCALORIES_PER_GRAM["fats"]) / FC.KCALORIES_PER_GRAM["carbs"]
+        )
+        carbs_max: float = round(
+            (kcal - protein_min * FC.KCALORIES_PER_GRAM["protein"] - 
+             fats_min * FC.KCALORIES_PER_GRAM["fats"]) / FC.KCALORIES_PER_GRAM["carbs"]
+        )
 
-        Carbs_Min:float = round((Kcal - Protein_Max * FC.Kcalories_Per_Gramm["Protein"] - Fats_Max * FC.Kcalories_Per_Gramm["Fats"]) / FC.Kcalories_Per_Gramm["Carbs"])
-        Carbs_Max:float = round((Kcal - Protein_Min * FC.Kcalories_Per_Gramm["Protein"] - Fats_Min * FC.Kcalories_Per_Gramm["Fats"]) / FC.Kcalories_Per_Gramm["Carbs"])
+        pfc: dict[str, float] = {
+            "protein_min": protein_min, "protein_max": protein_max,
+            "fats_min": fats_min, "fats_max": fats_max,
+            "carbs_min": carbs_min, "carbs_max": carbs_max
+        }
+        return pfc
 
-        PFC:dict[str,float] = {"Protein_Min": Protein_Min, "Protein_Max": Protein_Max,
-                    "Fats_Min": Fats_Min, "Fats_Max": Fats_Max,
-                    "Carbs_Min": Carbs_Min, "Carbs_Max": Carbs_Max}
-        return PFC
 
-class DeficitCalculator():
-    Deficit_CPFC:dict[str, dict[str, float|dict[str, float]]]
+class DeficitCalculator:
+    deficit_cpfc: dict[str, dict[str, float | dict[str, float]]]
 
-    def __init__(self, TDEE:float = 2000, Weight:float = 80, Goal:str = "G", Mode:str = "Normal") -> None:
-        self.Deficit_CPFC = self.Collect_Deficit_Data(TDEE, Weight, Goal, Mode)
+    def __init__(self, tdee: float = 2000, weight: float = 80, goal: str = "G", 
+                 mode: str = "normal") -> None:
+        self.deficit_cpfc = self.collect_deficit_data(tdee, weight, goal, mode)
     
     @staticmethod
-    def Calories_Calculate(TDEE:float, goal:str, coef_dificit:int) -> float:
-        return TDEE * (1 + FC.Value_Goals_For_Calculator[goal]*(coef_dificit/100))
+    def calories_calculate(tdee: float, goal: str, coef_deficit: int) -> float:
+        return tdee * (1 + FC.VALUE_GOALS_FOR_CALCULATOR[goal] * (coef_deficit / 100))
     
     @staticmethod
-    def Collect_Deficit_Data(TDEE:float, weight:float, goal:str, mode:str) -> dict[str, dict[str, float|dict[str, float]]]:
-        deficit_modes:list[str] = list(FC.Deficit_Mode[goal].keys())
-        valid_mode:str|None = csv(mode, deficit_modes)
-        if valid_mode == None:
+    def collect_deficit_data(tdee: float, weight: float, goal: str, mode: str) -> dict[str, dict[str, float | dict[str, float]]]:
+        deficit_modes: list[str] = list(FC.DEFICIT_MODE[goal].keys())
+        valid_mode: str | None = check_str_value(mode, deficit_modes)
+        if valid_mode is None:
             valid_mode = deficit_modes[0]
 
-        coeficients:tuple[int,int] = FC.Deficit_Mode[goal][valid_mode]
-        Deficit_CPFC:dict[str, dict[str, float|dict[str, float]]] = {}
-        for deficit in coeficients:
-            kcal:float = round(DeficitCalculator.Calories_Calculate(TDEE, goal, deficit))
-            Deficit_CPFC[str(deficit)] = {
-                "Kcal" : kcal,
-                "PFC" : CPFC_Calculator.PFC_Calculate(weight, kcal, goal)
-            }
-        return Deficit_CPFC
+        coefficients: tuple[int, int] = FC.DEFICIT_MODE[goal][valid_mode]
+        deficit_cpfc: dict[str, dict[str, float | dict[str, float]]] = {}
         
+        for deficit in coefficients:
+            kcal: float = round(DeficitCalculator.calories_calculate(tdee, goal, deficit))
+            deficit_cpfc[str(deficit)] = {
+                "kcal": kcal,
+                "pfc": CPFCCalculator.pfc_calculate(weight, kcal, goal)
+            }
+        return deficit_cpfc
