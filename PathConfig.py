@@ -18,8 +18,8 @@ class Checker_Paths(File_Paths):
     def Check_Path(self, File_Name:str) -> bool:
         return path.exists(self.get_path(File_Name))
 
-    def Check_Paths(self) -> dict[str,dict[str, bool]]:
-        Directory_Info:dict[dict[str,str], bool] = {}
+    def Check_Paths(self) -> dict[str,dict[str, bool|str]]:
+        Directory_Info:dict[str,dict[str, bool|str]] = {}
         for File, File_Path in self._Paths.items():
             Directory_Info[File] = {
                 "Path" : File_Path,

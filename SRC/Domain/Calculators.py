@@ -90,7 +90,7 @@ class DeficitCalculator():
     @staticmethod
     def Collect_Deficit_Data(TDEE:float, weight:float, goal:str, mode:str) -> dict[str, dict[str, float|dict[str, float]]]:
         deficit_modes:list[str] = list(FC.Deficit_Mode[goal].keys())
-        valid_mode:str = csv(mode, deficit_modes)
+        valid_mode:str|None = csv(mode, deficit_modes)
         if valid_mode == None:
             valid_mode = deficit_modes[0]
 
