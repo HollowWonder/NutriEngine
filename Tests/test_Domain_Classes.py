@@ -56,7 +56,7 @@ class Test_Calculator():
         bmi_info:dict[str, float|str] = BMI_Information.BMI_Calculate(weight, height)
         bmr:float = CPFC_Calculator.BMR_Calculate(weight, height, age, gender)
         tdee:float = CPFC_Calculator.TDEE_Calculate(bmr, weekly_activity)
-        pfc:dict[str,int] = CPFC_Calculator.PFC_Calculate(weight, tdee, goal)
+        pfc:dict[str,float] = CPFC_Calculator.PFC_Calculate(weight, tdee, goal)
 
         Deficit_Info:DeficitCalculator = DeficitCalculator(tdee, weight, goal, mode)
         deficit_info:dict[str, dict[str, float|dict[str, float]]] = DeficitCalculator.Collect_Deficit_Data(tdee,weight,goal,mode)
