@@ -31,11 +31,10 @@ class TestUserData:
         (80, "M", 2, 90),
         (66, "m", 1, None)
     ])
-    def test_user_goals(self, current_weight: int, goal: str, weekly_activity: int, 
-                       goal_weight: Optional[float]) -> None:
+    def test_user_goals(self, current_weight: int, goal: str, weekly_activity: int, goal_weight: Optional[float]) -> None:
         goals = UserGoals(current_weight, goal, weekly_activity, goal_weight)
 
-        assert goals.current_weight == current_weight
+        assert goals._current_weight == current_weight
         assert goals.goal == goal
         assert goals.weekly_activity == weekly_activity
         assert goals.goal_weight == goal_weight
@@ -50,7 +49,7 @@ class TestCalculator:
     ]
 
     @pytest.mark.parametrize("gender, age, height, weight, weekly_activity, goal, mode", common_test_data)
-    def test_result(self, gender: str, age: int, height: float, weight: float, 
+    def test_calculators_result(self, gender: str, age: int, height: float, weight: float, 
                    weekly_activity: int, goal: str, mode: str) -> None:
         cpfc_info = CPFCCalculator(gender, age, height, weight, weekly_activity, goal)
         bmi_info = BMIInformation(height, weight)
