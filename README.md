@@ -23,6 +23,7 @@
 - **Data** - Data storage
     - **TestData** - Test data files
       - `TestData.json` - Test user data
+    - `UsersData.json` - Data of users
 - **PathConfig.py** - Files path configuration
 - **Main.py** - Main application
 - **requirements.txt** - Dependencies

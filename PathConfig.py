@@ -6,6 +6,7 @@ class FilePaths:
         self.base_dir: str = path.dirname(__file__)
         self._paths: dict[str, str] = {
             "NutriEngine": self.base_dir,
+            "UsersData.json": path.join(self.base_dir, "Data", "UsersData.json"),
             "TestData.json": path.join(self.base_dir, "Data", "TestData", "TestData.json")
         }
     
