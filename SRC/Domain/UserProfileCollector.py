@@ -23,12 +23,16 @@ class DefaultUserProfile:
     _personality_user_info: dict[str, dict[str, str | int | float | None]]
     _fitness_info: FitnessInformationType
 
+    _mode: str
+
     def __init__(self, name: str = "TestUser", gender: str = "M", age: int = 20, height: float = 180, weight: float = 80, goal: str = "M", weekly_activity: int = 0, goal_weight: Optional[float] = None, mode: str = "mormal") -> None:
         self._personality_user_info_class: UserInformation = UserInformation(name, gender, age, height, weight, goal, weekly_activity, goal_weight)
         self._fitness_info_class = FitnessInformation(gender, age, height, weight, weekly_activity, goal, mode)
+        self._mode = mode
 
     def return_data_user_profile(self) -> UserProfileType:
         self._personality_user_info = self._personality_user_info_class.personality_user_info
+        self._personality_user_info["user_goals"]["mode"] = self._mode
         self._fitness_info = self._fitness_info_class.fitness_info
 
         return {
@@ -150,4 +154,3 @@ class FitnessInformation:
             "pfc": self._cpfc_info.pfc,
             "deficit_info": self._deficit_cpfc
         }
-        
