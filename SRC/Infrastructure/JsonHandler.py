@@ -107,7 +107,7 @@ class JsonOperations:
                         goal = str(user_goals["goal"]) if user_goals["goal"] is not None else "M"
                         weekly_activity = int(user_goals["weekly_activity"]) if user_goals["weekly_activity"] is not None else 0
                         goal_weight = float(user_goals["goal_weight"]) if user_goals["goal_weight"] is not None else None
-                        mode = str(user_goals["mode"]) if user_goals["mode"] is not None else "normal"
+                        mode = str(user_goals["deficit_mode"]) if user_goals["deficit_mode"] is not None else "normal"
 
                         user_profile_class:DefaultUserProfile = DefaultUserProfile(name, gender, age, height, weight, goal, weekly_activity, goal_weight, mode)
                         new_user_profile = user_profile_class.return_data_user_profile()
@@ -147,7 +147,7 @@ class JsonOperations:
             dump(data, file, ensure_ascii=False, indent=2)
     
     def _check_id(self, id: str) -> bool:
-        if not self._check_json_file:
+        if self._check_json_file == False:
             return False
         
         try:

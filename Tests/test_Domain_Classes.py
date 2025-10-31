@@ -20,24 +20,25 @@ class TestUserData:
         user_info = UserInfo(name, gender, age, height, weight)
 
         assert user_info.name == name
-        assert user_info.gender == gender
+        assert user_info.gender == gender.upper()
         assert user_info.age == age
         assert user_info.height == height
         assert user_info.weight == weight
 
-    @pytest.mark.parametrize("current_weight, goal, weekly_activity, goal_weight", [
-        (60, "l", 4, 59),
-        (70, "G", 7, 80),
-        (80, "M", 2, 90),
-        (66, "m", 1, None)
+    @pytest.mark.parametrize("current_weight, goal, weekly_activity, goal_weight, mode", [
+        (60, "l", 4, 59, "normal"),
+        (70, "G", 7, 80, "normal"),
+        (80, "M", 2, 80, "normal"),
+        (66, "m", 1, 66, "normal")
     ])
-    def test_user_goals(self, current_weight: int, goal: str, weekly_activity: int, goal_weight: Optional[float]) -> None:
-        goals = UserGoals(current_weight, goal, weekly_activity, goal_weight)
+    def test_user_goals(self, current_weight: int, goal: str, weekly_activity: int, goal_weight: Optional[float], mode: str) -> None:
+        goals = UserGoals(current_weight, goal, weekly_activity, goal_weight, mode)
 
-        assert goals._current_weight == current_weight
-        assert goals.goal == goal
+        assert goals.current_weight == current_weight
+        assert goals.goal == goal.upper()
         assert goals.weekly_activity == weekly_activity
         assert goals.goal_weight == goal_weight
+        assert goals.deficit_mode == mode
 
 
 class TestCalculator:

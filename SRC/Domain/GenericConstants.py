@@ -1,3 +1,6 @@
+class TehnicalLimitations:
+    MIN_LEN_NAME = 1
+    MAX_LEN_NAME = 25
 class RealisticValidations:
     # For userinfo class
     LIST_OF_GENDERS: list[str] = ['M', 'W']
