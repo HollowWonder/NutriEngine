@@ -62,7 +62,7 @@ class UserGoals:
 
     
     @staticmethod
-    def get_weight_range(weight) -> dict[str, dict[str, float]]:
+    def get_weight_range(weight: float) -> dict[str, dict[str, float]]:
         return {
             "M": {"min": weight, "max": weight},
             "G": {"min": weight + 1, "max": RV.MAX_WEIGHT},

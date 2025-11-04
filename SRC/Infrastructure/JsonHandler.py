@@ -29,7 +29,7 @@ class JsonOperation:
             print(f"Error in check_json_file: {e}")
             return False
     
-    def load_data(self) -> DataDictType :
+    def load_data(self) -> DataDictType:
         try:
             with open(self.data_path, "r", encoding="utf-8") as file:
                 data: DataDictType
@@ -42,7 +42,7 @@ class JsonOperation:
                 return data
         except Exception as e:
             print(f"Error in load_data: {e}")
-            return None
+            return {}
 
     def save_data(self, data: DataDictType) -> None:
         try:
@@ -73,9 +73,9 @@ class JsonOperation:
             data: DataDictType = self.load_data()
             new_id: str
 
-            if data != None:
+            try:
                 new_id = str(len(data.keys()))
-            else:
+            except:
                 data = {}
                 new_id = "0"
             
@@ -95,10 +95,8 @@ class JsonOperation:
                 return None
 
             data: DataDictType = self.load_data()
-            if data != None:
-                user_data: Optional[UserDataType] = data[id]
-                return user_data
-            return None
+            user_data: Optional[UserDataType] = data[id]
+            return user_data
         except Exception as e:
             print(f"Error in get_data: {e}")
             return None
@@ -109,39 +107,41 @@ class JsonOperation:
                 return None
 
             data: DataDictType = self.load_data()
-            if data != None:
-                data[id] = None
-                self.save_data(data)
-            return None
+            data[id] = None
+            self.save_data(data)
         except Exception as e:
             print(f"Error in dalete data: {e}")
             return None
     
-    def update_user_profile_field(self, id: str, parameter: str, value: Any) -> None:
+    def update_user_profile_field(self, id: str, parameter: str) -> None:
         try:
             if self.check_id(id) == False:
                 return None
 
             new_user_profile: UserProfileType
             data: DataDictType = self.load_data()
-            if data == None:
-                print("Data is empty")
-                return None
             user_data: Optional[UserDataType] = data[id]
+            if user_data is None:
+                print(f"User #{id} was delete")
+                return None
             
-            if user_data != None:
-                user_data_personality_info: dict[str, dict[str, Any]] = user_data["user_profile"]["personality_user_info"]
-
+            user_data_personality_info: dict[str, dict[str, Any]] = user_data["user_profile"]["personality_user_info"]
             user_info: dict[str, Any] = user_data_personality_info["user_info"]
             user_goals: dict[str, Any] = user_data_personality_info["user_goals"]
 
             user_info_parameters: list[str] = list(user_info.keys())
             user_goals_parameters: list[str] = list(user_goals.keys())
 
+            data_funtions = InputUserProfile.data_input_funtions()
             if parameter in user_info_parameters:
-                user_info[parameter] = value
+                user_info[parameter] = data_funtions[parameter]()
             elif parameter in user_goals_parameters:
-                user_goals[parameter] = value
+                if parameter == "goal_weight":
+                    user_info[parameter] = data_funtions[parameter](user_info["weight"], user_goals["goal"])
+                elif parameter == "deficit_mode":
+                    user_info[parameter] = data_funtions[parameter](user_goals["goal"])
+                else:
+                    user_info[parameter] = data_funtions[parameter]()
             else:
                 print(f"Invalid parameter, must be one of {*user_info_parameters, *user_goals_parameters}")
                 return None
@@ -161,9 +161,6 @@ class JsonOperation:
                 
             new_user_profile: UserProfileType
             data: DataDictType = self.load_data()
-            if data == None:
-                print("Data is empty")
-                return None
             user_data: Optional[UserDataType] = data[id]
             if user_data == None:
                 print(f"User {id} was delete")

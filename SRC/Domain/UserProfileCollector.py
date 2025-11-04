@@ -1,9 +1,8 @@
 from SRC.Domain.User import UserInfo, UserGoals
 from SRC.Domain.Calculators import CPFCCalculator, DeficitCalculator, BMIInformation
-from typing import Optional, TypedDict
-from SRC.Domain.GenericConstants import FitnessConstants as FC
-from SRC.Infrastructure.Validations import check_numerical_input_value, check_str_input_value
-from SRC.Domain.GenericConstants import RealisticValidations as RV
+from typing import Optional, TypedDict, Callable
+from SRC.Infrastructure.Validations import check_numerical_input_value, check_str_input_value, check_str_len_value
+from SRC.Domain.GenericConstants import TehnicalLimitations as TL, RealisticValidations as RV, FitnessConstants as FC
 
 
 class FitnessInformationType(TypedDict):
@@ -44,51 +43,90 @@ class InputUserProfile:
     weight: float
     goal: str
     weekly_activity: int
-    goal_weight: Optional[float]
+    goal_weight: float
     deficit_mode: str
 
     def __init__(self) -> None:
-        self.input_name()
-        self.input_gender()
-        self.input_age()
-        self.input_height()
-        self.input_weight()
-        self.input_goal()
-        self.input_weekly_activity()
-        self.input_goal_weight()
-        self.input_deficit_mode()
+        self.name = self.input_name()
+        self.gender = self.input_gender()
+        self.age = self.input_age()
+        self.height = self.input_height()
+        self.weight = self.input_weight()
+        self.goal = self.input_goal()
+        self.weekly_activity = self.input_weekly_activity()
+        self.goal_weight = self.input_goal_weight(self.weight, self.goal)
+        self.deficit_mode = self.input_deficit_mode(self.goal)
         self._user_profile_class = DefaultUserProfile(self.name,self.gender, self.age, self.height, self.weight, self.goal, self.weekly_activity, self.goal_weight, self.deficit_mode)
     
     def return_data_inputed_user_profile(self) -> UserProfileType:
         return self._user_profile_class.return_data_user_profile()
 
-    def input_name(self) -> None:
-        self.name = input("What's your name: ")
+    @staticmethod
+    def input_name() -> str:
+        name: str = input("What's your name: ")
+        check_name: Optional[str] = check_str_len_value(name, TL.MIN_LEN_NAME, TL.MAX_LEN_NAME)
+        return check_name if check_name != None else name[:TL.MIN_LEN_NAME-2]
     
-    def input_gender(self) -> None:
-        self.gender = input("What's your gender: ")
+    @staticmethod
+    def input_gender() -> str:
+        gender: str = check_str_input_value("What's your gender: ", RV.LIST_OF_GENDERS)
+        return gender
     
-    def input_age(self) -> None:
-        self.age = int(input("How old are you: "))
+    @staticmethod
+    def input_age() -> int:
+        age: float = check_numerical_input_value("How old are you: ", RV.MIN_AGE, RV.MAX_AGE) 
+        return int(age)
     
-    def input_height(self) -> None:
-        self.height = float(input("How tall are you (cm): "))
+    @staticmethod
+    def input_height() -> float:
+        height: float = check_numerical_input_value("How tall are you (cm): ", RV.MIN_HEIGHT, RV.MAX_HEIGHT)
+        return height
     
-    def input_weight(self) -> None:
-        self.weight = float(input("How much do you weigh (kg): "))
+    @staticmethod
+    def input_weight() -> float:
+        weight: float = check_numerical_input_value("How much do you weigh (kg): ", RV.MIN_WEIGHT, RV.MAX_WEIGHT)
+        return weight
     
-    def input_goal(self) -> None:
-        self.goal = input("Maintenance weight - M\nLose weight - L\nGain weight - G\nChoice: ")
+    @staticmethod
+    def input_goal() -> str:
+        goal: str = check_str_input_value("Maintenance weight - M\nLose weight - L\nGain weight - G\nChoice: ", RV.VALID_GOALS)
+        return goal
     
-    def input_weekly_activity(self) -> None:
-        self.weekly_activity = int(input("Workouts per week (0 if none): "))
+    @staticmethod
+    def input_weekly_activity() -> int:
+        weekly_activity: float = check_numerical_input_value("Workouts per week (0 if none): ", RV.MIN_ACTIVITY, RV.MAX_ACTIVITY)
+        return int(weekly_activity)
 
-    def input_goal_weight(self) -> None:
-        self.goal_weight = float(input("What weight do you want (kg): "))
+    @staticmethod
+    def input_goal_weight(weight: float, goal: str) -> float:
+        goal_weight: float
+        if goal != "M":
+            weight_ranges: dict[str, dict[str, float]] = UserGoals.get_weight_range(weight)
+            goal_weight = check_numerical_input_value("What weight do you want (kg): ", weight_ranges[goal]["min"], weight_ranges[goal]["max"])
+        else:
+            goal_weight = weight
+        return goal_weight
+
+    @staticmethod
+    def input_deficit_mode(goal: str) -> str:
+        list_of_deficit_modes: list[str] = list(FC.DEFICIT_MODE[goal].keys())
+        dificit_mode: str = check_str_input_value(f"Choice deficit mode {list_of_deficit_modes}: ", list_of_deficit_modes)
+        return dificit_mode
     
-    def input_deficit_mode(self) -> None:
-        list_deficit_mode: list[str] = list(mode for mode in FC.DEFICIT_MODE[self.goal].keys())
-        self.deficit_mode = input(f"Choice deficit mode {list_deficit_mode}: ")
+    @staticmethod
+    def data_input_funtions() -> dict[str, Callable[..., str | int | float]]:
+        data_funtions: dict[str, Callable[..., str | int | float]] = {
+            "name" : InputUserProfile.input_name,
+            "gender" : InputUserProfile.input_gender,
+            "age": InputUserProfile.input_age,
+            "height": InputUserProfile.input_height,
+            "weight": InputUserProfile.input_weight,
+            "goal": InputUserProfile.input_goal,
+            "weekly_activity": InputUserProfile.input_weekly_activity,
+            "goal_weight": InputUserProfile.input_goal_weight,
+            "deficit_mode": InputUserProfile.input_deficit_mode
+        }
+        return data_funtions
 
 class UserInformation:
     personality_user_info: dict[str, dict[str, str | int | float | None]]

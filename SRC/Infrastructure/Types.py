@@ -12,6 +12,6 @@ class UserDataType(TypedDict):
     system_info: SystemUserInfoType
     user_profile: UserProfileType
 
-DataDictType = Optional[dict[str, Optional[UserDataType]]]
+DataDictType = dict[str, Optional[UserDataType]]
 
 
