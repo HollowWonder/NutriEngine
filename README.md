@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-- **SRC** - Folder with all scripts and library
+- **SRC** - 
   - **Domain** - Business logic layer (core program functionality)
     - `__init__.py` - Package initialization file
     - `User.py` - User classes
@@ -13,6 +13,8 @@
     - `__init__.py` - Package initialization file
     - `JsonHandler.py` -  JSON operations
     - `Validations.py` - Input data validation functions
+    - `Authorization.py` - Autorization system
+    - `Types.py` - Types data for Infrastructure
   - **Presentation** - Interface program
     - `__init__.py` - Package initialization file
 - **Tests** - Related to tests

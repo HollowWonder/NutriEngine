@@ -3,9 +3,11 @@ from typing import TypedDict, Optional
 
 #Types for Autorization.py
 class SystemUserInfoType(TypedDict):
-    id: str
-    user_name: str
+    uid: str
+    username: str
     password: str
+    created: str
+    last_login: str
 
 #types for JSONHandler.py
 class UserDataType(TypedDict):

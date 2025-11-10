@@ -3,7 +3,7 @@ from PathConfig import FilePaths as FP
 from SRC.Domain.UserProfileCollector import UserProfileType, DefaultUserProfile, InputUserProfile
 from SRC.Infrastructure.Validations import check_str_value
 from SRC.Infrastructure.Types import SystemUserInfoType, UserDataType, DataDictType
-from typing import Optional, TypedDict, Any
+from typing import Optional, TypedDict, Any, Callable
 
 
 class JsonOperation:
@@ -79,7 +79,7 @@ class JsonOperation:
                 data = {}
                 new_id = "0"
             
-            system_info["id"] = new_id
+            system_info["uid"] = new_id
             data[new_id] = {
                 "system_info": system_info,
                 "user_profile": user_profile
@@ -113,7 +113,7 @@ class JsonOperation:
             print(f"Error in dalete data: {e}")
             return None
     
-    def update_user_profile_field(self, id: str, parameter: str) -> None:
+    def update_user_profile_field(self, id: str) -> None:
         try:
             if self.check_id(id) == False:
                 return None
@@ -132,7 +132,10 @@ class JsonOperation:
             user_info_parameters: list[str] = list(user_info.keys())
             user_goals_parameters: list[str] = list(user_goals.keys())
 
-            data_funtions = InputUserProfile.data_input_funtions()
+            list_parameters: list[str] = [*user_info_parameters, *user_goals_parameters]
+            parameter: str = input(f"{list_parameters}\nChoice parameter: ").lower()
+
+            data_funtions: dict[str, Callable[..., str | int | float]] = InputUserProfile.data_input_funtions()
             if parameter in user_info_parameters:
                 user_info[parameter] = data_funtions[parameter]()
             elif parameter in user_goals_parameters:
@@ -143,7 +146,7 @@ class JsonOperation:
                 else:
                     user_info[parameter] = data_funtions[parameter]()
             else:
-                print(f"Invalid parameter, must be one of {*user_info_parameters, *user_goals_parameters}")
+                print(f"Invalid parameter, must be one of {list_parameters}")
                 return None
 
             new_user_profile = create_user_profile(user_info, user_goals)
