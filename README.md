@@ -20,11 +20,7 @@
 - **Tests** - Related to tests
   - `__init__.py` - Package initialization file
   - `test_Domain_Classes.py` - Domain test runner
-  - `TestDataGenerator.py` - Generator of test data
-  - `TestJsonHandler` - JSON operaions with test data
-- **Data** - Data storage
-    - **TestData** - Test data files
-      - `TestData.json` - Test user data
+- **Data** - Data storages
     - `UsersData.json` - Data of users
 - **PathConfig.py** - Files path configuration
 - **Main.py** - Main application
