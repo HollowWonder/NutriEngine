@@ -1,19 +1,22 @@
-from SRC.Infrastructure.JsonHandler import JsonOperation
-from SRC.Infrastructure.Types import DataDictType as DDT, SystemUserInfoType as SUIT, UserDataType as UDT
+from SRC.Infrastructure.JsonHandler import JsonOperation, BaseJsonOperation
+from SRC.Infrastructure.Types import UserDataType, DataDictType as DDT, SystemUserInfoType as SUIT, UserDataType as UDT
 from SRC.Domain.UserProfileCollector import InputUserProfile
 from datetime import datetime
 from passlib.hash import bcrypt
 from typing import Optional, Callable
 from random import choice
+from json import dumps
 
 class AutoService:
+    base_json: BaseJsonOperation
     json: JsonOperation
     data: DDT
     login_b: bool
 
-    def __init__(self, json: JsonOperation) -> None:
+    def __init__(self, base_json: BaseJsonOperation, json: JsonOperation) -> None:
+        self.base_json = base_json
         self.json = json
-        self.data = json.load_data()
+        self.data = self.base_json.load_data()
     
     def regist_user(self) -> None:
         try:
@@ -69,7 +72,7 @@ class AutoService:
                 funtions: dict[str, Callable[..., Optional[UDT]]] = {
                     "update_profile": self.json.update_user_profile,
                     "update": self.json.update_user_profile_field,
-                    "get": self.json.get_data,
+                    "get": self._get_info_logic,
                     "delete": self.json.delete_data,
                     "log_out": self._log_out_logic
                 }
@@ -92,14 +95,18 @@ class AutoService:
     
     def _update_login_time(self, uid: str) -> None:
         date: str = str(datetime.now())
-        data = self.json.load_data()
+        data = self.base_json.load_data()
         user_data: Optional[UDT] = data[uid]
         if user_data is None:
             print("something went wrong")
             return None
         user_system_info = user_data["system_info"]
         user_system_info["last_login"] = date
-        self.json.save_data(data)
+        self.base_json.save_data(data)
+    
+    def _get_info_logic(self, uid: str) -> None:
+        info: Optional[UserDataType] = self.json.get_data(uid)
+        print(dumps(info, ensure_ascii=False, indent=2))
 
         
 

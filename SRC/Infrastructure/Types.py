@@ -16,4 +16,11 @@ class UserDataType(TypedDict):
 
 DataDictType = dict[str, Optional[UserDataType]]
 
+class UserLogsType(TypedDict):
+    uid: str
+    username: str
+    logs: dict[str, str]
+
+LogsDictType = dict[str, UserLogsType] 
+
 

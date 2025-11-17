@@ -2,15 +2,15 @@ from json import load, dump, JSONDecodeError
 from PathConfig import FilePaths as FP
 from SRC.Domain.UserProfileCollector import UserProfileType, DefaultUserProfile, InputUserProfile
 from SRC.Infrastructure.Validations import check_str_value
-from SRC.Infrastructure.Types import SystemUserInfoType, UserDataType, DataDictType
+from SRC.Infrastructure.Types import UserLogsType, LogsDictType, SystemUserInfoType, UserDataType, DataDictType
+from datetime import datetime
 from typing import Optional, TypedDict, Any, Callable
 
-
-class JsonOperation:
-    data_path:str
+class BaseJsonOperation:
+    file_path: str
     check_file: bool
 
-    def __init__(self, file_name:str) -> None:
+    def __init__(self, file_name: str) -> None:
         file_paths_class: FP = FP()
         self.data_path = file_paths_class.get_path(file_name)
         self.check_file = self.check_json_file()
@@ -29,10 +29,10 @@ class JsonOperation:
             print(f"Error in check_json_file: {e}")
             return False
     
-    def load_data(self) -> DataDictType:
+    def load_data(self) -> Any:
         try:
             with open(self.data_path, "r", encoding="utf-8") as file:
-                data: DataDictType
+                data: Any
 
                 try:
                     data = load(file)
@@ -44,7 +44,7 @@ class JsonOperation:
             print(f"Error in load_data: {e}")
             return {}
 
-    def save_data(self, data: DataDictType) -> None:
+    def save_data(self, data: Any) -> None:
         try:
             with open(self.data_path, "r+", encoding="utf-8") as file:
                 # return to begin file
@@ -55,14 +55,54 @@ class JsonOperation:
         except Exception as e:
             print(f"Error in save_data: {e}")
             return None
+
+class Log:
+    json: BaseJsonOperation
+    logs_data: LogsDictType
+
+    def __init__(self) -> None:
+        self.json = BaseJsonOperation("LogsData.json")
+        self.logs_data = self.json.load_data()
     
-    def check_id(self, id: str) -> bool:
+    def create_user_log(self, uid: str, username: str) -> None:
         try:
-            data: DataDictType = self.load_data()
-            check_id_bool: bool = data is not None and id in data
+            self.logs_data[uid] = {
+                "uid": uid,
+                "username": username,
+                "logs": {
+                    str(datetime.now()): f"User #{uid} was add"
+                }
+            }
+            self.json.save_data(self.logs_data)
+        except Exception as e:
+            print(f"Error in create_user_log: {e}")
+            return None
+
+    def update_user_log(self, uid: str, messsage: str) -> None:
+        try:
+            user_logs: UserLogsType = self.logs_data[uid]
+            date: str = str(datetime.now())
+            user_logs["logs"][date] = messsage
+            self.json.save_data(user_logs)
+        except Exception as e:
+            print(f"Error in update_user_log: {e}")
+            return None
+
+class JsonOperation:
+    base_json: BaseJsonOperation
+    log: Log
+
+    def __init__(self, file_name:str) -> None:
+        self.base_json = BaseJsonOperation(file_name)
+        self.log = Log()
+    
+    def check_id(self, uid: str) -> bool:
+        try:
+            data: DataDictType = self.base_json.load_data()
+            check_id_bool: bool = data is not None and uid in data
 
             if check_id_bool == False:
-                print(f"UID-{id} not found or data is empty")
+                print(f"UID-{uid} not found or data is empty")
             return check_id_bool
         except Exception as e:
             print(f"Error in check_id: {e}")
@@ -70,7 +110,7 @@ class JsonOperation:
 
     def add_data(self, system_info: SystemUserInfoType, user_profile: UserProfileType) -> None:
         try:
-            data: DataDictType = self.load_data()
+            data: DataDictType = self.base_json.load_data()
             new_id: str
 
             try:
@@ -84,45 +124,48 @@ class JsonOperation:
                 "system_info": system_info,
                 "user_profile": user_profile
             }
-            self.save_data(data)
+            self.base_json.save_data(data)
+            self.log.create_user_log(new_id, system_info["username"])
         except Exception as e:
             print(f"Error in add_data: {e}")
             return None
 
-    def get_data(self, id: str) -> Optional[UserDataType]:
+    def get_data(self, uid: str) -> Optional[UserDataType]:
         try:
-            if self.check_id(id) == False:
+            if self.check_id(uid) == False:
                 return None
 
-            data: DataDictType = self.load_data()
-            user_data: Optional[UserDataType] = data[id]
+            data: DataDictType = self.base_json.load_data()
+            user_data: Optional[UserDataType] = data[uid]
+            self.log.update_user_log(uid, f"Was get info about user #{uid}")
             return user_data
         except Exception as e:
             print(f"Error in get_data: {e}")
             return None
     
-    def delete_data(self, id: str) -> None:
+    def delete_data(self, uid: str) -> None:
         try:
-            if self.check_id(id) == False:
+            if self.check_id(uid) == False:
                 return None
 
-            data: DataDictType = self.load_data()
-            data[id] = None
-            self.save_data(data)
+            data: DataDictType = self.base_json.load_data()
+            data[uid] = None
+            self.base_json.save_data(data)
+            self.log.update_user_log(uid, f"User #{uid} was delete")
         except Exception as e:
             print(f"Error in dalete data: {e}")
             return None
     
-    def update_user_profile_field(self, id: str) -> None:
+    def update_user_profile_field(self, uid: str) -> None:
         try:
-            if self.check_id(id) == False:
+            if self.check_id(uid) == False:
                 return None
 
             new_user_profile: UserProfileType
-            data: DataDictType = self.load_data()
-            user_data: Optional[UserDataType] = data[id]
+            data: DataDictType = self.base_json.load_data()
+            user_data: Optional[UserDataType] = data[uid]
             if user_data is None:
-                print(f"User #{id} was delete")
+                print(f"User #{uid} was delete")
                 return None
             
             user_data_personality_info: dict[str, dict[str, Any]] = user_data["user_profile"]["personality_user_info"]
@@ -134,17 +177,23 @@ class JsonOperation:
 
             list_parameters: list[str] = [*user_info_parameters, *user_goals_parameters]
             parameter: str = input(f"{list_parameters}\nChoice parameter: ").lower()
+            last_value: Optional[str | float | int]
+            new_value: Optional[str | float | int]
 
             data_funtions: dict[str, Callable[..., str | int | float]] = InputUserProfile.data_input_funtions()
             if parameter in user_info_parameters:
-                user_info[parameter] = data_funtions[parameter]()
+                last_value = user_info[parameter]
+                new_value = data_funtions[parameter]()
+                user_info[parameter] = new_value
             elif parameter in user_goals_parameters:
+                last_value = user_info[parameter]
                 if parameter == "goal_weight":
-                    user_info[parameter] = data_funtions[parameter](user_info["weight"], user_goals["goal"])
+                    new_value = data_funtions[parameter](user_info["weight"], user_goals["goal"])
                 elif parameter == "deficit_mode":
-                    user_info[parameter] = data_funtions[parameter](user_goals["goal"])
+                    new_value = data_funtions[parameter](user_goals["goal"])
                 else:
-                    user_info[parameter] = data_funtions[parameter]()
+                    new_value = data_funtions[parameter]()
+                user_goals[parameter] = new_value
             else:
                 print(f"Invalid parameter, must be one of {list_parameters}")
                 return None
@@ -152,27 +201,29 @@ class JsonOperation:
             new_user_profile = create_user_profile(user_info, user_goals)
             if user_data is not None:
                 user_data["user_profile"] = new_user_profile
-            self.save_data(data)
+            self.base_json.save_data(data)
+            self.log.update_user_log(uid, f"Changed {parameter} from {last_value} to {new_value}")
         except Exception as e:
             print(f"Error in update_user_profile_field: {e}")
             return None
     
-    def update_user_profile(self, id: str) -> None:
+    def update_user_profile(self, uid: str) -> None:
         try:
-            if self.check_id(id) == False:
+            if self.check_id(uid) == False:
                 return None
                 
             new_user_profile: UserProfileType
-            data: DataDictType = self.load_data()
-            user_data: Optional[UserDataType] = data[id]
+            data: DataDictType = self.base_json.load_data()
+            user_data: Optional[UserDataType] = data[uid]
             if user_data == None:
-                print(f"User {id} was delete")
+                print(f"User {uid} was delete")
                 return None
             input_user_prifle_class: InputUserProfile = InputUserProfile()
             new_user_profile = input_user_prifle_class.return_data_inputed_user_profile()
             if user_data is not None:
                 user_data["user_profile"] = new_user_profile
-            self.save_data(data)
+            self.base_json.save_data(data)
+            self.log.update_user_log(uid, "Full updated user information")
         except Exception as e:
             print(f"Error in update_user_profile: {e}")
             return None
