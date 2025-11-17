@@ -22,6 +22,7 @@
   - `test_Domain_Classes.py` - Domain test runner
 - **Data** - Data storages
     - `UsersData.json` - Data of users
+    - `LogsData.json` - Data of users log
 - **PathConfig.py** - Files path configuration
 - **Main.py** - Main application
 - **requirements.txt** - Dependencies
