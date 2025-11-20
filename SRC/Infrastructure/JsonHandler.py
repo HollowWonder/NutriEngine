@@ -80,21 +80,20 @@ class Log:
 
     def update_user_log(self, uid: str, messsage: str) -> None:
         try:
-            user_logs: UserLogsType = self.logs_data[uid]
+            users_logs: LogsDictType = self.logs_data
+            user_logs: UserLogsType = users_logs[uid]
             date: str = str(datetime.now())
             user_logs["logs"][date] = messsage
-            self.json.save_data(user_logs)
+            self.json.save_data(users_logs)
         except Exception as e:
             print(f"Error in update_user_log: {e}")
             return None
 
 class JsonOperation:
     base_json: BaseJsonOperation
-    log: Log
 
     def __init__(self, file_name:str) -> None:
         self.base_json = BaseJsonOperation(file_name)
-        self.log = Log()
     
     def check_id(self, uid: str) -> bool:
         try:
@@ -108,7 +107,7 @@ class JsonOperation:
             print(f"Error in check_id: {e}")
             return False
 
-    def add_data(self, system_info: SystemUserInfoType, user_profile: UserProfileType) -> None:
+    def add_data(self, system_info: SystemUserInfoType, user_profile: UserProfileType) -> Optional[str]:
         try:
             data: DataDictType = self.base_json.load_data()
             new_id: str
@@ -125,7 +124,7 @@ class JsonOperation:
                 "user_profile": user_profile
             }
             self.base_json.save_data(data)
-            self.log.create_user_log(new_id, system_info["username"])
+            return new_id
         except Exception as e:
             print(f"Error in add_data: {e}")
             return None
@@ -137,7 +136,6 @@ class JsonOperation:
 
             data: DataDictType = self.base_json.load_data()
             user_data: Optional[UserDataType] = data[uid]
-            self.log.update_user_log(uid, f"Was get info about user #{uid}")
             return user_data
         except Exception as e:
             print(f"Error in get_data: {e}")
@@ -151,12 +149,11 @@ class JsonOperation:
             data: DataDictType = self.base_json.load_data()
             data[uid] = None
             self.base_json.save_data(data)
-            self.log.update_user_log(uid, f"User #{uid} was delete")
         except Exception as e:
             print(f"Error in dalete data: {e}")
             return None
     
-    def update_user_profile_field(self, uid: str) -> None:
+    def update_user_profile_field(self, uid: str) -> Optional[dict[str, Any]]:
         try:
             if self.check_id(uid) == False:
                 return None
@@ -202,7 +199,11 @@ class JsonOperation:
             if user_data is not None:
                 user_data["user_profile"] = new_user_profile
             self.base_json.save_data(data)
-            self.log.update_user_log(uid, f"Changed {parameter} from {last_value} to {new_value}")
+            return {
+                "parameter": parameter,
+                "old_value": last_value,
+                "new_value": new_value            
+                }
         except Exception as e:
             print(f"Error in update_user_profile_field: {e}")
             return None
@@ -223,7 +224,6 @@ class JsonOperation:
             if user_data is not None:
                 user_data["user_profile"] = new_user_profile
             self.base_json.save_data(data)
-            self.log.update_user_log(uid, "Full updated user information")
         except Exception as e:
             print(f"Error in update_user_profile: {e}")
             return None

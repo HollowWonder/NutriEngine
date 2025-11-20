@@ -17,6 +17,7 @@
     - `Types.py` - Types data for Infrastructure
   - **Presentation** - Interface program
     - `__init__.py` - Package initialization file
+    - `CLI.py` - Console line interface
 - **Tests** - Related to tests
   - `__init__.py` - Package initialization file
   - `test_Domain_Classes.py` - Domain test runner

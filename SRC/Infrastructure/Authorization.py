@@ -1,21 +1,25 @@
-from SRC.Infrastructure.JsonHandler import JsonOperation, BaseJsonOperation
-from SRC.Infrastructure.Types import UserDataType, DataDictType as DDT, SystemUserInfoType as SUIT, UserDataType as UDT
+from SRC.Infrastructure.JsonHandler import JsonOperation, BaseJsonOperation, Log
+from SRC.Infrastructure.Types import DataDictType as DDT, SystemUserInfoType as SUIT, UserDataType as UDT, UserProfileType as UPT
 from SRC.Domain.UserProfileCollector import InputUserProfile
+from SRC.Infrastructure.Validations import check_numerical_input_value as CNIV
 from datetime import datetime
 from passlib.hash import bcrypt
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 from random import choice
 from json import dumps
+import sys
 
 class AutoService:
     base_json: BaseJsonOperation
     json: JsonOperation
+    logs: Log
     data: DDT
     login_b: bool
 
-    def __init__(self, base_json: BaseJsonOperation, json: JsonOperation) -> None:
+    def __init__(self, base_json: BaseJsonOperation, json: JsonOperation, logs: Log) -> None:
         self.base_json = base_json
         self.json = json
+        self.logs = logs
         self.data = self.base_json.load_data()
     
     def regist_user(self) -> None:
@@ -35,7 +39,7 @@ class AutoService:
                 "last_login": str(datetime.now())
             }
             user_profile_class: InputUserProfile = InputUserProfile()
-            self.json.add_data(system_info, user_profile_class.return_data_inputed_user_profile())
+            self._add_profile_logic(system_info, user_profile_class.return_data_inputed_user_profile(), username_class.username)
         except Exception as e:
             print(f"Error in regist_user: {e}")
 
@@ -57,6 +61,7 @@ class AutoService:
                     if PasswordHandler.verify_hash_password(password, user_hash_password):
                         self.login_b = True
                         self._update_login_time(uid)
+                        self.logs.update_user_log(uid, "log in")
                         self._login_logic(uid)
                         return None
                     print("invalid password")
@@ -70,29 +75,55 @@ class AutoService:
         try:
             while self.login_b:
                 funtions: dict[str, Callable[..., Optional[UDT]]] = {
-                    "update_profile": self.json.update_user_profile,
-                    "update": self.json.update_user_profile_field,
-                    "get": self._get_info_logic,
-                    "delete": self.json.delete_data,
-                    "log_out": self._log_out_logic
+                    "update_profile": lambda: self._update_profile_logic(uid),
+                    "update": lambda: self._update_value_logic(uid),
+                    "get": lambda: self._get_info_logic(uid),
+                    "delete": lambda: self._delete_logic(uid),
+                    "log_out": lambda: self._log_out_logic(uid)
                 }
-                funtion: str = input(f"Commands: {funtions.keys()}\nChoice command: ").lower()
-                if funtion == "delete":
-                    funtions[funtion](uid)
-                    self.login_b = False
-                elif funtion == "log_out":
-                    funtions[funtion]()
-                else:
-                    funtions[funtion](uid)
+                for num, command in enumerate(funtions):
+                    print(f"{num} - {command}")
+                commands: list[str] = list(funtions.keys())
+                current_command: int = int(CNIV("Choice command: ", 0, len(funtions.keys())))
+                funtions[commands[current_command]]()
             return None
         except Exception as e:
             print(f"Error in _login_logic: {e}")
             return None
     
-    def _log_out_logic(self) -> None:
+    def _add_profile_logic(self, system_info: SUIT, user_profile: UPT, username: str) -> None:
+        uid: Optional[str] = self.json.add_data(system_info, user_profile)
+        if uid is None:
+            print("Error in _add_profile_logic")
+            return None
+        self.logs.create_user_log(uid, username)
+    
+    def _log_out_logic(self, uid: str) -> None:
+        self.logs.update_user_log(uid, "log out")
         self.login_b = False
         return None
     
+    def _delete_logic(self, uid: str) -> None:
+        self.json.delete_data(uid)
+        self.logs.update_user_log(uid, "User was delete")
+        self._log_out_logic(uid)
+    
+    def _get_info_logic(self, uid: str) -> None:
+        info: Optional[UDT] = self.json.get_data(uid)
+        print(dumps(info, ensure_ascii=False, indent=2))
+        self.logs.update_user_log(uid, "Got user data")
+    
+    def _update_profile_logic(self, uid: str) -> None:
+        self.json.update_user_profile(uid)
+        self.logs.update_user_log(uid, "Update user info")
+    
+    def _update_value_logic(self, uid: str) -> None:
+        change_info: Optional[dict[str, Any]] = self.json.update_user_profile_field(uid)
+        if change_info is None:
+            print("Error in update_value_logic")
+            return None
+        self.logs.update_user_log(uid, f"Update value {change_info["parameter"]} from {change_info["old_value"]} to {change_info["new_value"]}")
+
     def _update_login_time(self, uid: str) -> None:
         date: str = str(datetime.now())
         data = self.base_json.load_data()
@@ -103,10 +134,6 @@ class AutoService:
         user_system_info = user_data["system_info"]
         user_system_info["last_login"] = date
         self.base_json.save_data(data)
-    
-    def _get_info_logic(self, uid: str) -> None:
-        info: Optional[UserDataType] = self.json.get_data(uid)
-        print(dumps(info, ensure_ascii=False, indent=2))
 
         
 
